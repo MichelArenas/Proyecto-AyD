@@ -281,9 +281,9 @@ class DefaultASTVisitor(ASTVisitor):
             for r in node.ranges:
                 if isinstance(r, tuple):
                     s, e = r
-                    if hasattr(s, "accept") and s is not None:
+                    if s and hasattr(s, "accept"):
                         s.accept(self)
-                    if hasattr(e, "accept") and e is not None:
+                    if e and hasattr(e, "accept"):
                         e.accept(self)
                 else:
                     if hasattr(r, "accept"):

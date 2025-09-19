@@ -1,0 +1,54 @@
+COMMENT: /►[^\n]*/
+NUMBER: /[-+]?[0-9]+(\.[0-9]+)?/
+STRING: ESCAPED_STRING
+RANGE: ".."
+ASSIGN: "<-"
+PLUS: "+"
+MINUS: "-"
+AND: "and"
+OR: "or"
+NOT: "not"
+TRUE: "T"
+FALSE: "F"
+NULL: "NULL"
+COMP_OP: "<=" | ">=" | "!=" | /<(?!\-)/ | ">" | "="
+NL: /(\r?\n)+/
+
+BEGIN: "begin"
+END: "end"
+RETURN_KW: "return"
+CLASS_KW: "class"
+VAR_KW: "var"
+NEW_KW: "new"
+
+IF: "if"
+THEN: "then"
+ELSE: "else"
+
+FOR: "for"
+TO: "to"
+DO: "do"
+WHILE: "while"
+REPEAT: "repeat"
+UNTIL: "until"
+
+CALL_KW: "CALL" | "call"
+LENGTH_KW: "length"
+DIVINT: "div"
+MOD: "mod"
+CEIL: "ceil"
+FLOOR: "floor"
+CONCAT: "concat"
+SUBSTRING: "substring"
+STRLEN: "strlen"
+GRAPH_KW: "Graph"
+NODE_KW: "Node"
+EDGE_KW: "Edge"
+ADDNODE: "addNode"
+ADDEDGE: "addEdge"
+NEIGHBORS: "neighbors"
+
+%import common.ESCAPED_STRING
+%import common.WS
+%ignore WS
+%ignore COMMENT

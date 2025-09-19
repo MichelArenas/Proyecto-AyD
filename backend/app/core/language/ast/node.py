@@ -55,7 +55,7 @@ class ASTNode(ABC):
         filename: Optional[str] = None,
     ):
         """Set source position information"""
-        if self.metadata is None:
+        if not self.metadata:
             self.metadata = ASTMetadata()
 
         self.metadata.position = SourcePosition(
