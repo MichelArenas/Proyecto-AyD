@@ -5,7 +5,7 @@ Provides validation and suggestions for multidimensional array usage.
 
 from typing import Any, List, Tuple, Optional, Dict
 
-from app.core.language.ast.node import (
+from language.ast.node import (
     ArrayAccess,
     ArraySlice,
     ArrayTarget,
@@ -13,8 +13,8 @@ from app.core.language.ast.node import (
     Number,
     Var,
 )
-from app.core.language.ast.visitor import DefaultASTVisitor
-from app.core.utils.array_dimension_tracker import ArrayDimensionTracker
+from language.ast.visitor import DefaultASTVisitor
+from utils.array_dimension_tracker import ArrayDimensionTracker
 
 
 class MultidimensionalArrayHandler(DefaultASTVisitor):

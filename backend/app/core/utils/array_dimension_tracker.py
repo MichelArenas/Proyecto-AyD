@@ -4,7 +4,7 @@ Tracks and validates array dimensions in AST nodes.
 
 from typing import Any, Dict, List, Optional
 
-from app.core.language.ast.node import Number
+from language.ast.node import Number
 
 
 class ArrayDimensionTracker:

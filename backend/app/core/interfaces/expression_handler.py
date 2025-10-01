@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, List
 
-from app.core.language.ast.node import ASTNode
+from language.ast.node import ASTNode
 
 
 class IExpressionHandler(ABC):

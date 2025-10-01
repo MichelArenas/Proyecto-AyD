@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from app.core.language.ast.node import Program
+from language.ast.node import Program
 
 
 class IASTTransformer(ABC):

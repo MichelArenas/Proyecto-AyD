@@ -6,10 +6,10 @@ from typing import Any, List
 
 from lark import Token
 
-from app.core.interfaces.ast_normalizer import IASTNormalizer
-from app.core.interfaces.binary_operation_handler import \
+from interfaces.ast_normalizer import IASTNormalizer
+from interfaces.binary_operation_handler import \
     IBinaryOperationHandler
-from app.core.language.ast.node import ASTNode, BinOp
+from language.ast.node import ASTNode, BinOp
 
 
 class BinaryOperationHandler(IBinaryOperationHandler):
