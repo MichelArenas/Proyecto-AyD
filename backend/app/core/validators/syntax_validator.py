@@ -4,7 +4,7 @@ Syntax validator for the language AST.
 
 from typing import Any, List, Optional, Set, Tuple
 
-from language.ast.node import (AddEdgeFunction, AddNodeFunction,
+from app.core.language.ast.node import (AddEdgeFunction, AddNodeFunction,
                                         ArrayAccess, ArraySlice, ArrayTarget,
                                         ArrayVarDecl, Assignment, BinOp, Bool,
                                         CallStmt, CeilFunction, ClassDef,
@@ -19,11 +19,11 @@ from language.ast.node import (AddEdgeFunction, AddNodeFunction,
                                         StrlenFunction, SubroutineDef,
                                         SubstringFunction, UnOp, Var, VarDecl,
                                         VarTarget, WhileLoop)
-from language.ast.visitor import DefaultASTVisitor
-from utils.array_dimension_tracker import ArrayDimensionTracker
-from utils.multidimensional_handler import \
+from app.core.language.ast.visitor import DefaultASTVisitor
+from app.core.utils.array_dimension_tracker import ArrayDimensionTracker
+from app.core.utils.multidimensional_handler import \
     MultidimensionalArrayHandler
-from validators.loop_validator import LoopValidator
+from app.core.validators.loop_validator import LoopValidator
 
 
 class SyntaxValidator(DefaultASTVisitor):

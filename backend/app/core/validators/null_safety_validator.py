@@ -5,12 +5,12 @@ Analyzes code to detect potential NULL-related issues.
 
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from language.ast.node import (Assignment, ASTNode, BinOp,
+from app.core.language.ast.node import (Assignment, ASTNode, BinOp,
                                         FieldAccess, FieldTarget, ForLoop,
                                         FuncCallExpr, IfElse, NewObject, Null,
                                         Program, RepeatUntil, Var, VarTarget,
                                         WhileLoop)
-from language.ast.visitor import DefaultASTVisitor
+from app.core.language.ast.visitor import DefaultASTVisitor
 
 
 class NullSafetyValidator(DefaultASTVisitor):

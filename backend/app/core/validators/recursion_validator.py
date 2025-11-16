@@ -1,8 +1,8 @@
 from collections import defaultdict
 from typing import Any, Dict, Set
 
-from language.ast.node import CallStmt, FuncCallExpr, SubroutineDef
-from language.ast.visitor import DefaultASTVisitor
+from app.core.language.ast.node import CallStmt, FuncCallExpr, SubroutineDef
+from app.core.language.ast.visitor import DefaultASTVisitor
 
 
 class RecursionValidator(DefaultASTVisitor):

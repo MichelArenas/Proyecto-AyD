@@ -1,4 +1,5 @@
-from language.language_parser import LanguageParser
+from app.core.language.language_parser import LanguageParser
+from app.core.validators.validation_suite import ValidationSuite
 
 
 def main():
@@ -24,6 +25,9 @@ end
 """
     parser = LanguageParser()
     result = parser.parse(pseudo_code)
+    print(result)
+    validator = ValidationSuite()
+    result = validator.validate_program(result)
     print(result)
 
 

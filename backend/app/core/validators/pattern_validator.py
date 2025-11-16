@@ -3,10 +3,11 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from language.ast.node import (ArrayAccess, Assignment, ASTNode, BinOp,
-                               CallStmt, ForLoop, FuncCallExpr, IfElse,
-                               Program, RepeatUntil, ReturnStmt, SubroutineDef,
-                               VarTarget, WhileLoop)
+from app.core.language.ast.node import (ArrayAccess, Assignment, ASTNode,
+                                        BinOp, CallStmt, ForLoop, FuncCallExpr,
+                                        IfElse, Program, RepeatUntil,
+                                        ReturnStmt, SubroutineDef, VarTarget,
+                                        WhileLoop)
 
 
 @dataclass

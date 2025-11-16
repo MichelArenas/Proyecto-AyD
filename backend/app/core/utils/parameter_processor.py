@@ -4,10 +4,10 @@ Processes different types of parameters in the AST.
 
 from typing import Any, List
 
-from interfaces.parameter_processor import IParameterProcessor
-from interfaces.token_extractor import ITokenExtractor
-from language.ast.node import Parameter
-from utils.token_extractor import TokenExtractor
+from app.core.interfaces.parameter_processor import IParameterProcessor
+from app.core.interfaces.token_extractor import ITokenExtractor
+from app.core.language.ast.node import Parameter
+from app.core.utils.token_extractor import TokenExtractor
 
 
 class ParameterProcessor(IParameterProcessor):

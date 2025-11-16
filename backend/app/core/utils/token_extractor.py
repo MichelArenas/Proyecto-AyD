@@ -6,7 +6,7 @@ from typing import Any
 
 from lark import Token
 
-from interfaces.token_extractor import ITokenExtractor
+from app.core.interfaces.token_extractor import ITokenExtractor
 
 
 class TokenExtractor(ITokenExtractor):

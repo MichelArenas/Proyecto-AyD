@@ -1,28 +1,13 @@
 from typing import Any, Dict, List, Set, Tuple, Type
 
-from language.ast.node import (
-    ArrayAccess,
-    ArrayVarDecl,
-    Assignment,
-    ASTNode,
-    BinOp,
-    Bool,
-    ClassDef,
-    FieldAccess,
-    FuncCallExpr,
-    GraphVarDecl,
-    Null,
-    Number,
-    ObjectVarDecl,
-    Parameter,
-    Program,
-    ReturnStmt,
-    String,
-    SubroutineDef,
-    Var,
-    VarDecl,
-)
-from language.ast.visitor import DefaultASTVisitor
+from app.core.language.ast.node import (ArrayAccess, ArrayVarDecl, Assignment,
+                                        ASTNode, BinOp, Bool, ClassDef,
+                                        FieldAccess, FuncCallExpr,
+                                        GraphVarDecl, Null, Number,
+                                        ObjectVarDecl, Parameter, Program,
+                                        ReturnStmt, String, SubroutineDef, Var,
+                                        VarDecl)
+from app.core.language.ast.visitor import DefaultASTVisitor
 
 
 class SemanticValidator(DefaultASTVisitor):

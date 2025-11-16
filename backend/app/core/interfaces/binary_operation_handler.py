@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, List
 
-from language.ast.node import ASTNode
+from app.core.language.ast.node import ASTNode
 
 
 class IBinaryOperationHandler(ABC):

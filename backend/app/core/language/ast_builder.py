@@ -6,7 +6,7 @@ from typing import Any, Callable, List
 
 from lark import Token, Transformer
 
-from language.ast.node import (AddEdgeFunction, AddNodeFunction,
+from app.core.language.ast.node import (AddEdgeFunction, AddNodeFunction,
                                         ArrayAccess, ArraySlice, ArrayTarget,
                                         ArrayVarDecl, Assignment, ASTNode,
                                         BinOp, Bool, CallMethod, CallStmt,
@@ -22,14 +22,14 @@ from language.ast.node import (AddEdgeFunction, AddNodeFunction,
                                         StrlenFunction, SubroutineDef,
                                         SubstringFunction, UnOp, Var, VarDecl,
                                         VarTarget, WhileLoop)
-from utils.array_dimension_tracker import ArrayDimensionTracker
-from utils.ast_normalizer import ASTNormalizer
-from utils.binary_operation_handler import BinaryOperationHandler
-from utils.indexer_processor import IndexerProcessor
-from utils.multidimensional_handler import \
+from app.core.utils.array_dimension_tracker import ArrayDimensionTracker
+from app.core.utils.ast_normalizer import ASTNormalizer
+from app.core.utils.binary_operation_handler import BinaryOperationHandler
+from app.core.utils.indexer_processor import IndexerProcessor
+from app.core.utils.multidimensional_handler import \
     MultidimensionalArrayHandler
-from utils.parameter_processor import ParameterProcessor
-from utils.token_extractor import TokenExtractor
+from app.core.utils.parameter_processor import ParameterProcessor
+from app.core.utils.token_extractor import TokenExtractor
 
 
 class ASTBuilder(Transformer[Any]):
