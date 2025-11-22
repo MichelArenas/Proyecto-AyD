@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Set, Tuple, Type
 
-from language.ast.node import (
+from app.core.language.ast.node import (
     ArrayAccess,
     ArrayVarDecl,
     Assignment,
@@ -22,7 +22,7 @@ from language.ast.node import (
     Var,
     VarDecl,
 )
-from language.ast.visitor import DefaultASTVisitor
+from app.core.language.ast.visitor import DefaultASTVisitor
 
 
 class SemanticValidator(DefaultASTVisitor):

@@ -4,8 +4,8 @@ Processes different indexer types for arrays in the AST.
 
 from typing import Any, Tuple
 
-from interfaces.indexer_processor import IIndexerProcessor
-from language.ast.node import Null
+from app.core.interfaces.indexer_processor import IIndexerProcessor
+from app.core.language.ast.node import Null
 
 
 

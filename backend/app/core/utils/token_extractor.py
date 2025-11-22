@@ -6,7 +6,19 @@ from typing import Any
 
 from lark import Token
 
-from interfaces.token_extractor import ITokenExtractor
+#from app.core.utils.token_extractor import ITokenExtractor
+
+class ITokenExtractor:
+    """
+    Interface for token extractors.
+    Defines the methods that any token extractor must implement.
+    """
+
+    def extract_name(self, item: Any) -> str:
+        raise NotImplementedError
+
+    def extract_value(self, item: Any) -> Any:
+        raise NotImplementedError
 
 
 class TokenExtractor(ITokenExtractor):

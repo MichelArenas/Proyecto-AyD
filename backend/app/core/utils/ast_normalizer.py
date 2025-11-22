@@ -7,9 +7,9 @@ from typing import Any
 
 from lark import Token, Tree, logger
 
-from exceptions.exception import ParsingError
-from interfaces.ast_normalizer import IASTNormalizer
-from language.ast.node import Bool, Null, Number, String, Var
+from app.core.exceptions.exception import ParsingError
+from app.core.interfaces.ast_normalizer import IASTNormalizer
+from app.core.language.ast.node import Bool, Null, Number, String, Var
 
 
 class ASTNormalizer(IASTNormalizer):

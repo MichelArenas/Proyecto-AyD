@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from language.ast.node import Program
+from app.core.language.ast.node import Program
 
 
 class ILanguageParser(ABC):

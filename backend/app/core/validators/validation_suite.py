@@ -4,12 +4,12 @@ Validation suite for programs in the custom language.
 
 from typing import Any, Dict, List, Union
 
-from exceptions.exception import ValidationError
-from language.ast.node import Program
-from validators.null_safety_validator import NullSafetyValidator
-from validators.pattern_validator import PatternValidator
-from validators.semantic_validator import SemanticValidator
-from validators.syntax_validator import SyntaxValidator
+from app.core.exceptions.exception import ValidationError
+from app.core.language.ast.node import Program
+from app.core.validators.null_safety_validator import NullSafetyValidator
+from app.core.validators.pattern_validator import PatternValidator
+from app.core.validators.semantic_validator import SemanticValidator
+from app.core.validators.syntax_validator import SyntaxValidator
 
 
 class ValidationSuite:

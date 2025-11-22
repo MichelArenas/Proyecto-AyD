@@ -1,30 +1,42 @@
-from language.language_parser import LanguageParser
-
+from app.core.language.language_parser import LanguageParser
+from app.core.language.ast.ast_printer import ASTPrinterVisitor
+from app.core.language.ast.ast_analyzer import ASTAnalyzerVisitor
+from app.core.validators.validation_suite import ValidationSuite
 
 def main():
-    pseudo_code = """
-    ► Demo completo para probar la gramática
-► Definición de clases (deben ir antes del algoritmo principal)
-class Person { name age }
-class Casa { Area color propietario }
-
-► Subrutina con parámetro arreglo unidimensional
-sumArray(arr[])
+    code = """
+    var b, s, t
+   a <- 0
+   n <- 10
+for i <- 1 to n do
 begin
-    var i, s
-    i <- 1
-    s <- 0
-    for i <- 1 to length(arr) do
+    for j <- 1 to n do
     begin
-        s <- s + arr[i]
+        a <- a + 1
     end
-    return s
+end
+if a > 10 then
+begin
+    call f()
 end
 
-"""
+    """
+
     parser = LanguageParser()
-    result = parser.parse(pseudo_code)
-    print(result)
+    ast = parser.parse(code)
+
+    print(ValidationSuite().validate_program(ast))
+
+    # ✅ 1. Imprimir AST
+    print("✅ AST generado:\n")
+    printer = ASTPrinterVisitor()
+    ast.accept(printer)
+
+    # ✅ 2. Analizar estructura y complejidad
+    print("\n🔍 Análisis de complejidad:\n")
+    analyzer = ASTAnalyzerVisitor()
+    ast.accept(analyzer)
+    print(analyzer.get_report())
 
 
 if __name__ == "__main__":

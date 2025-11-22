@@ -1,10 +1,10 @@
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from language.ast.node import (Assignment, BinOp, ForLoop, IfElse,
+from app.core.language.ast.node import (Assignment, BinOp, ForLoop, IfElse,
                                         Number, Program, RepeatUntil,
                                         SubroutineDef, Var, VarTarget,
                                         WhileLoop)
-from language.ast.visitor import DefaultASTVisitor
+from app.core.language.ast.visitor import DefaultASTVisitor
 
 
 class LoopValidator(DefaultASTVisitor):

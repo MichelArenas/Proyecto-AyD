@@ -2,12 +2,12 @@
 Module that contains the implementation of the main parser for the refactored language.
 """
 
-from exceptions.exception import ParsingError
-from interfaces.language_parser import ILanguageParser
-from language.ast.node import Program
-from language.lark_parser import LarkParser
-from language.ast_builder import ASTBuilder
-from utils import FileReader
+from app.core.exceptions.exception import ParsingError
+from app.core.interfaces.language_parser import ILanguageParser
+from app.core.language.ast.node import Program
+from app.core.language.lark_parser import LarkParser
+from app.core.language.ast_builder import ASTBuilder
+from app.core.utils import FileReader
 
 
 class LanguageParser(ILanguageParser):

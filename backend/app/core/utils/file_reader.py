@@ -2,8 +2,8 @@
 Utility for reading text files from disk.
 """
 
-from exceptions.exception import ParsingError
-from interfaces.file_reader import IFileReader
+from app.core.exceptions.exception import ParsingError
+from app.core.interfaces.file_reader import IFileReader
 
 
 
