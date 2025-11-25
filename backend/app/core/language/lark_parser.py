@@ -6,7 +6,7 @@ import os
 
 from lark import Lark
 
-from .ast_builder import ASTBuilder
+from app.core.language.ast_builder import ASTBuilder
 
 
 class LarkParser:

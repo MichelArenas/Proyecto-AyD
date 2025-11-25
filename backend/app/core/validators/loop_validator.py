@@ -1,13 +1,21 @@
+"""
+Loop Validator for a Custom Programming Language AST
+"""
+
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from app.core.language.ast.node import (Assignment, BinOp, ForLoop, IfElse,
-                                        Number, Program, RepeatUntil,
-                                        SubroutineDef, Var, VarTarget,
-                                        WhileLoop)
-from app.core.language.ast.visitor import DefaultASTVisitor
+from app.core.language.ast import (Assignment, BinOp, DefaultASTVisitor,
+                                   ForLoop, IfElse, Number, Program,
+                                   RepeatUntil, SubroutineDef, Var, VarTarget,
+                                   WhileLoop)
 
 
 class LoopValidator(DefaultASTVisitor):
+    """
+    Validates loop constructs in the AST, ensuring correct usage of loop counters,
+    proper nesting, and adherence to language-specific loop semantics.
+    """
+
     def __init__(self):
         self.errors: List[str] = []
         self.warnings: List[str] = []
@@ -186,7 +194,8 @@ class LoopValidator(DefaultASTVisitor):
         """Check for potential infinite loops in WHILE statements."""
         if isinstance(node.cond, Var):
             self.add_warning(
-                f"WHILE loop with simple variable condition - ensure '{node.cond.name}' is modified in loop body"
+                "WHILE loop with simple variable condition - ensure "
+                f"'{node.cond.name}' is modified in loop body"
             )
 
     def get_nesting_analysis(self) -> Dict[str, Any]:

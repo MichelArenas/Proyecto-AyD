@@ -2,12 +2,40 @@
 Processes different types of parameters in the AST.
 """
 
+from abc import ABC, abstractmethod
 from typing import Any, List
 
-from app.core.interfaces.parameter_processor import IParameterProcessor
-from app.core.interfaces.token_extractor import ITokenExtractor
-from app.core.language.ast.node import Parameter
+from app.core.language.ast import Parameter
 from app.core.utils.token_extractor import TokenExtractor
+
+
+class IParameterProcessor(ABC):
+    """Interface for parameter processing
+
+    This interface defines the contract for handling various types of parameters,
+    such as simple variables, arrays, objects, and graphs. It ensures that any
+    implementation provides methods for processing these parameter types.
+    """
+
+    @abstractmethod
+    def process_simple_parameter(self, items: List[Any]) -> Parameter:
+        """Processes a simple parameter: VAR"""
+        pass
+
+    @abstractmethod
+    def process_array_parameter(self, items: List[Any]) -> Parameter:
+        """Processes an array parameter: VAR[indexer]..."""
+        pass
+
+    @abstractmethod
+    def process_object_parameter(self, items: List[Any]) -> Parameter:
+        """Processes an object parameter: CLASS VAR VAR"""
+        pass
+
+    @abstractmethod
+    def process_graph_parameter(self, items: List[Any]) -> Parameter:
+        """Processes a graph parameter: GRAPH VAR"""
+        pass
 
 
 class ParameterProcessor(IParameterProcessor):
@@ -15,7 +43,7 @@ class ParameterProcessor(IParameterProcessor):
     Processes different types of parameters in the AST.
     """
 
-    def __init__(self, token_extractor: ITokenExtractor):
+    def __init__(self, token_extractor: TokenExtractor):
         """
         Initialize with a token extractor.
         """

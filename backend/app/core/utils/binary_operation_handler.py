@@ -2,14 +2,27 @@
 Implements handling of binary operations in the AST.
 """
 
+from abc import ABC, abstractmethod
 from typing import Any, List
 
 from lark import Token
 
-from app.core.interfaces.ast_normalizer import IASTNormalizer
-from app.core.interfaces.binary_operation_handler import \
-    IBinaryOperationHandler
-from app.core.language.ast.node import ASTNode, BinOp
+from app.core.language.ast import ASTNode, BinOp
+from app.core.utils.ast_normalizer import IASTNormalizer
+
+
+class IBinaryOperationHandler(ABC):
+    """
+    Interface for handling binary operations in the AST.
+    """
+
+    @abstractmethod
+    def create_binary_operation(self, op: str, left: Any, right: Any) -> ASTNode:
+        """Creates a binary operation"""
+
+    @abstractmethod
+    def process_chain(self, items: List[Any]) -> Any:
+        """Processes a chain of binary operations"""
 
 
 class BinaryOperationHandler(IBinaryOperationHandler):

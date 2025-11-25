@@ -2,10 +2,36 @@
 Processes different indexer types for arrays in the AST.
 """
 
+from abc import ABC, abstractmethod
 from typing import Any, Tuple
 
-from app.core.interfaces.indexer_processor import IIndexerProcessor
-from app.core.language.ast.node import Null
+from app.core.language.ast import Null
+
+
+class IIndexerProcessor(ABC):
+    """
+    Interface for processing different indexer types for arrays in the AST.
+    """
+
+    @abstractmethod
+    def process_range(self, start: Any, end: Any) -> Tuple[Any, Any]:
+        pass
+
+    @abstractmethod
+    def process_open_start(self, end: Any) -> Tuple[Any, Any]:
+        pass
+
+    @abstractmethod
+    def process_open_end(self, start: Any) -> Tuple[Any, Any]:
+        pass
+
+    @abstractmethod
+    def process_open_both(self) -> Tuple[Any, Any]:
+        pass
+
+    @abstractmethod
+    def process_single(self, expr: Any) -> Any:
+        pass
 
 
 class IndexerProcessor(IIndexerProcessor):

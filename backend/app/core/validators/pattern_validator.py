@@ -1,13 +1,14 @@
-""" """
+"""
+Module for validating and detecting algorithmic patterns in the AST of a program.
+"""
 
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from app.core.language.ast.node import (ArrayAccess, Assignment, ASTNode,
-                                        BinOp, CallStmt, ForLoop, FuncCallExpr,
-                                        IfElse, Program, RepeatUntil,
-                                        ReturnStmt, SubroutineDef, VarTarget,
-                                        WhileLoop)
+from app.core.language.ast import (ArrayAccess, Assignment, ASTNode, BinOp,
+                                   CallStmt, ForLoop, FuncCallExpr, IfElse,
+                                   Program, RepeatUntil, ReturnStmt,
+                                   SubroutineDef, VarTarget, WhileLoop)
 
 
 @dataclass
@@ -132,41 +133,37 @@ class PatternValidator:
             if recursion.recursive_calls >= 2:
                 confidence = 0.7
                 evidence = [
-                    f"Función {func_name} hace {recursion.recursive_calls} llamadas recursivas"
+                    f"Recursive function with {recursion.recursive_calls} recursive calls"
                 ]
 
                 if recursion.base_cases > 0:
                     confidence += 0.2
-                    evidence.append(
-                        f"Tiene {recursion.base_cases} casos base identificados"
-                    )
+                    evidence.append(f"Has {recursion.base_cases} identified base cases")
 
                 if self._has_problem_division(func_name):
                     confidence += 0.1
-                    evidence.append("Evidencia de división del problema")
+                    evidence.append("Evidence of problem division")
 
                 self.patterns.append(
                     PatternDetection(
                         pattern_type="Divide and Conquer",
                         confidence=min(confidence, 1.0),
-                        location=f"Función {func_name}",
-                        description="Patrón divide y vencerás detectado por múltiples llamadas recursivas",
+                        location=f"Function {func_name}",
+                        description="Divide and conquer pattern detected by multiple recursive calls",
                         evidence=evidence,
                     )
                 )
 
     def _detect_dynamic_programming(self, program: Program) -> None:
-        """Detecta patrones de programación dinámica."""
-        for func_name, calls in self.function_calls.items():
-            # Buscar uso de memoización o tablas
-            if self._has_memoization_pattern(func_name):
+        """Detects dynamic programming patterns."""
+        for func_name, _ in self.function_calls.items():
+            if self._has_memoization(func_name):
                 confidence = 0.8
-                evidence = ["Uso de memoización o tabla de resultados detectado"]
+                evidence = ["Use of memoization or result table detected"]
 
-                # Verificar solapamiento de subproblemas
                 if func_name in self.recursion_info:
                     evidence.append(
-                        "Función recursiva con posible solapamiento de subproblemas"
+                        "Recursive function with possible subproblem overlap"
                     )
                     confidence += 0.1
 
@@ -174,100 +171,95 @@ class PatternValidator:
                     PatternDetection(
                         pattern_type="Dynamic Programming",
                         confidence=min(confidence, 1.0),
-                        location=f"Función {func_name}",
-                        description="Patrón de programación dinámica detectado",
+                        location=f"Function {func_name}",
+                        description="Dynamic programming pattern detected",
                         evidence=evidence,
                     )
                 )
 
     def _detect_greedy_patterns(self, program: Program) -> None:
-        """Detecta patrones de algoritmos greedy."""
-        # Detectar selección greedy en loops
+        """Detects greedy algorithm patterns."""
         for func_name, calls in self.function_calls.items():
             if self._has_greedy_selection(func_name):
                 confidence = 0.6
-                evidence = ["Selección de opción óptima local detectada"]
+                evidence = ["Local optimal choice selection detected"]
 
                 if self._has_optimization_criteria(func_name):
                     confidence += 0.2
-                    evidence.append("Criterios de optimización identificados")
+                    evidence.append("Optimization criteria identified")
 
                 self.patterns.append(
                     PatternDetection(
                         pattern_type="Greedy Algorithm",
                         confidence=min(confidence, 1.0),
-                        location=f"Función {func_name}",
-                        description="Patrón de algoritmo greedy detectado",
+                        location=f"Function {func_name}",
+                        description="Greedy algorithm pattern detected",
                         evidence=evidence,
                     )
                 )
 
     def _detect_backtracking(self, program: Program) -> None:
-        """Detecta patrones de backtracking."""
+        """Detects backtracking patterns."""
         for func_name, recursion in self.recursion_info.items():
             if self._has_backtracking_pattern(func_name):
                 confidence = 0.7
-                evidence = ["Patrón de backtracking detectado"]
+                evidence = ["Backtracking pattern detected"]
 
                 if recursion.recursive_calls > 0:
-                    evidence.append("Función recursiva que explora alternativas")
+                    evidence.append("Recursive function that explores alternatives")
                     confidence += 0.2
 
                 self.patterns.append(
                     PatternDetection(
                         pattern_type="Backtracking",
                         confidence=min(confidence, 1.0),
-                        location=f"Función {func_name}",
-                        description="Patrón de backtracking para exploración de soluciones",
+                        location=f"Function {func_name}",
+                        description="Backtracking pattern for solution exploration",
                         evidence=evidence,
                     )
                 )
 
     def _detect_function_patterns(self, func: SubroutineDef) -> None:
-        """Detecta patrones específicos de función."""
-        # Detectar funciones helper o auxiliares
+        """Detects function-specific patterns."""
         if self._is_helper_function(func):
             self.patterns.append(
                 PatternDetection(
                     pattern_type="Helper Function",
                     confidence=0.8,
-                    location=f"Función {func.name}",
-                    description="Función auxiliar detectada",
-                    evidence=["Función utilizada como helper en algoritmo principal"],
+                    location=f"Function {func.name}",
+                    description="Helper function detected",
+                    evidence=["Function used as helper in main algorithm"],
                 )
             )
 
     def _detect_loop_patterns(self, loop_node: ASTNode) -> None:
-        """Detecta patrones en loops."""
+        """Detects patterns in loops."""
         if self.loop_nesting > 2:
             self.patterns.append(
                 PatternDetection(
                     pattern_type="Nested Loops",
                     confidence=0.9,
-                    location=f"Función {self.current_function or 'desconocida'}",
-                    description=f"Loops anidados de nivel {self.loop_nesting}",
+                    location=f"Function {self.current_function or 'unknown'}",
+                    description=f"Nested loops at level {self.loop_nesting}",
                     evidence=[
-                        f"Anidamiento de loops de nivel {self.loop_nesting} puede indicar complejidad O(n^{self.loop_nesting})"
+                        f"Loop nesting at level {self.loop_nesting} may indicate O(n^{self.loop_nesting}) complexity"
                     ],
                 )
             )
 
-    # Métodos auxiliares de detección
-
     def _contains_recursive_call(self, node: ASTNode, func_name: str) -> bool:
-        """Verifica si un nodo contiene una llamada recursiva."""
+        """Checks if a node contains a recursive call."""
         if isinstance(node, FuncCallExpr) and node.name == func_name:
             return True
-        elif isinstance(node, CallStmt) and node.name == func_name:
+        if isinstance(node, CallStmt) and node.name == func_name:
             return True
 
-        # Buscar en nodos hijos
         return self._search_in_children(
             node, lambda n: self._contains_recursive_call(n, func_name)
         )
 
     def _is_tail_recursive_call(self, node: ASTNode, func_name: str) -> bool:
-        """Verifica si una llamada recursiva es tail recursion."""
+        """Checks if a recursive call is tail recursion."""
         if isinstance(node, ReturnStmt) and node.value:
             return (
                 isinstance(node.value, (FuncCallExpr, CallStmt))
@@ -276,16 +268,15 @@ class PatternValidator:
         return False
 
     def _is_base_case(self, node: ASTNode) -> bool:
-        """Detecta casos base en recursión."""
+        """Detects base cases in recursion."""
         if isinstance(node, ReturnStmt):
             return True
-        elif isinstance(node, IfElse):
-            # Verificar si alguna rama es un return simple
+        if isinstance(node, IfElse):
             return any(isinstance(stmt, ReturnStmt) for stmt in node.then_branch)
         return False
 
     def _modifies_parameters(self, node: ASTNode, parameters: List[Any]) -> bool:
-        """Verifica si se modifican los parámetros de la función."""
+        """Checks if function parameters are modified."""
         if isinstance(node, Assignment):
             target = node.target
             if isinstance(target, VarTarget):
@@ -294,16 +285,14 @@ class PatternValidator:
         return False
 
     def _has_problem_division(self, func_name: str) -> bool:
-        """Detecta evidencia de división del problema."""
-        # Simplificado: buscar indicios de división en llamadas
+        """Detects evidence of problem division."""
         return (
             func_name in self.recursion_info
             and self.recursion_info[func_name].recursive_calls >= 2
         )
 
-    def _has_memoization_pattern(self, func_name: str) -> bool:
-        """Detecta patrones de memoización."""
-        # Buscar arrays o estructuras que puedan ser tablas de memoización
+    def _has_memoization(self, func_name: str) -> bool:
+        """Detects memoization pattern."""
         calls = self.function_calls.get(func_name, [])
         return any(
             "tabla" in call.lower() or "memo" in call.lower() or "cache" in call.lower()
@@ -311,8 +300,7 @@ class PatternValidator:
         )
 
     def _has_greedy_selection(self, func_name: str) -> bool:
-        """Detecta selección greedy."""
-        # Buscar patrones como "max", "min", "mejor", "óptimo"
+        """Detects greedy selection pattern."""
         calls = self.function_calls.get(func_name, [])
         greedy_keywords = ["max", "min", "mejor", "optimo", "maximo", "minimo"]
         return any(
@@ -321,7 +309,7 @@ class PatternValidator:
         )
 
     def _has_optimization_criteria(self, func_name: str) -> bool:
-        """Detecta criterios de optimización."""
+        """Detects optimization criteria."""
         calls = self.function_calls.get(func_name, [])
         optimization_keywords = ["costo", "peso", "distancia", "beneficio", "valor"]
         return any(
@@ -330,8 +318,7 @@ class PatternValidator:
         )
 
     def _has_backtracking_pattern(self, func_name: str) -> bool:
-        """Detecta patrón de backtracking."""
-        # Buscar evidencia de "undo" o exploración de alternativas
+        """Detects backtracking pattern."""
         calls = self.function_calls.get(func_name, [])
         backtrack_keywords = ["undo", "revert", "backtrack", "deshacer", "explorar"]
         return any(
@@ -340,7 +327,7 @@ class PatternValidator:
         )
 
     def _is_helper_function(self, func: SubroutineDef) -> bool:
-        """Detecta si es una función auxiliar."""
+        """Detects if it is a helper function."""
         if not func.name:
             return False
         helper_indicators = ["helper", "aux", "util", "auxiliar"]
@@ -349,14 +336,14 @@ class PatternValidator:
         )
 
     def _search_in_children(self, node: ASTNode, predicate: Any) -> bool:
-        """Busca recursivamente en nodos hijos."""
+        """Recursively search in child nodes."""
         for child in self._get_children(node):
             if predicate(child) or self._search_in_children(child, predicate):
                 return True
         return False
 
     def _visit_children(self, node: ASTNode) -> None:
-        """Visita todos los nodos hijos."""
+        """Visit all child nodes."""
         for child in self._get_children(node):
             self._detect_patterns(child)
 

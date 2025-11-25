@@ -5,10 +5,9 @@ Provides validation and suggestions for multidimensional array usage.
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from app.core.language.ast.node import (ArrayAccess, ArraySlice, ArrayTarget,
-                                        BinOp, Number, Var)
-from app.core.language.ast.visitor import DefaultASTVisitor
-from app.core.utils.array_dimension_tracker import ArrayDimensionTracker
+from app.core.language.ast import (ArrayAccess, ArraySlice, ArrayTarget, BinOp,
+                                   DefaultASTVisitor, Number, Var)
+from app.core.utils import ArrayDimensionTracker
 
 
 class MultidimensionalArrayHandler(DefaultASTVisitor):
@@ -22,6 +21,24 @@ class MultidimensionalArrayHandler(DefaultASTVisitor):
         self.dimension_tracker: ArrayDimensionTracker = (
             dimension_tracker or ArrayDimensionTracker()
         )
+
+    def _is_valid_index(self, index: Any) -> bool:
+        """
+        Check if an index is valid for array access.
+        """
+        if isinstance(index, Number):
+            return isinstance(index.value, int) and index.value >= 0
+        if isinstance(index, Var):
+            return True
+        if isinstance(index, BinOp):
+            return True
+        return False
+
+    def _is_valid_range(self, start: Any, end: Any) -> bool:
+        """
+        Check if a range defined by start and end indices is valid.
+        """
+        return self._is_valid_index(start) and self._is_valid_index(end)
 
     def validate_multidimensional_access(
         self, array_name: str, indices: List[Any]
@@ -72,18 +89,6 @@ class MultidimensionalArrayHandler(DefaultASTVisitor):
                 return False
 
         return True
-
-    def _is_valid_index(self, index: Any) -> bool:
-        if isinstance(index, Number):
-            return isinstance(index.value, int) and index.value >= 0
-        if isinstance(index, Var):
-            return True
-        if isinstance(index, BinOp):
-            return True
-        return False
-
-    def _is_valid_range(self, start: Any, end: Any) -> bool:
-        return self._is_valid_index(start) and self._is_valid_index(end)
 
     def create_enhanced_array_access(
         self, name: str, indices: List[Any]

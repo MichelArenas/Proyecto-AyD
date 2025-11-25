@@ -3,13 +3,23 @@ AST normalizer for the language parser.
 Provides normalization utilities for AST nodes and tokens.
 """
 
+from abc import ABC, abstractmethod
 from typing import Any
 
 from lark import Token, Tree, logger
 
-from app.core.exceptions.exception import ParsingError
-from app.core.interfaces.ast_normalizer import IASTNormalizer
-from app.core.language.ast.node import Bool, Null, Number, String, Var
+from app.core.exceptions import ParsingError
+from app.core.language.ast import Bool, Null, Number, String, Var
+
+
+class IASTNormalizer(ABC):
+    """
+    Interface for AST normalizers.
+    """
+
+    @abstractmethod
+    def normalize(self, node: Any) -> Any:
+        """Normalizes an AST node"""
 
 
 class ASTNormalizer(IASTNormalizer):

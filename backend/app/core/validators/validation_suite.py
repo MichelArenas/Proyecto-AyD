@@ -4,12 +4,10 @@ Validation suite for programs in the custom language.
 
 from typing import Any, Dict, List, Union
 
-from app.core.exceptions.exception import ValidationError
-from app.core.language.ast.node import Program
-from app.core.validators.null_safety_validator import NullSafetyValidator
-from app.core.validators.pattern_validator import PatternValidator
-from app.core.validators.semantic_validator import SemanticValidator
-from app.core.validators.syntax_validator import SyntaxValidator
+from app.core.exceptions import ValidationError
+from app.core.language.ast import Program
+from app.core.validators import (NullSafetyValidator, PatternValidator,
+                                 SemanticValidator, SyntaxValidator)
 
 
 class ValidationSuite:
@@ -23,15 +21,14 @@ class ValidationSuite:
         self.semantic_validator = SemanticValidator()
         self.pattern_validator = PatternValidator()
 
-    def validate_program(
-        self, program: Program
-    ) -> Dict[str, Union[List[Any], Dict[str, int]]]:
+    def validate(self, program: Program) -> Dict[str, Union[List[Any], Dict[str, Any]]]:
 
-        results: Dict[str, list[Any]] = {
+        results: Dict[str, Any] = {
             "syntax_errors": [],
             "null_errors": [],
             "all_warnings": [],
             "detected_patterns": [],
+            "pattern_summary": {},
         }
 
         try:

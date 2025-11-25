@@ -2,8 +2,19 @@
 Utility for reading text files from disk.
 """
 
-from app.core.exceptions.exception import ParsingError
-from app.core.interfaces.file_reader import IFileReader
+from abc import ABC, abstractmethod
+
+from app.core.exceptions import ParsingError
+
+
+class IFileReader(ABC):
+    """
+    Interface for reading text files from disk.
+    """
+
+    @abstractmethod
+    def read_file(self, file_path: str) -> str:
+        """Reads the content of a file"""
 
 
 class FileReader(IFileReader):

@@ -2,11 +2,24 @@
 Extracts names and values from tokens and AST nodes.
 """
 
+from abc import ABC, abstractmethod
 from typing import Any
 
 from lark import Token
 
-from app.core.interfaces.token_extractor import ITokenExtractor
+
+class ITokenExtractor(ABC):
+    """
+    Interface for extracting names and values from tokens and AST nodes.
+    """
+
+    @abstractmethod
+    def extract_name(self, item: Any) -> str:
+        """Extracts the name of a token or node"""
+
+    @abstractmethod
+    def extract_value(self, item: Any) -> Any:
+        """Extracts the value of a token or node"""
 
 
 class TokenExtractor(ITokenExtractor):

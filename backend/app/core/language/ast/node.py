@@ -29,6 +29,7 @@ class ASTMetadata:
     """
     Metadata for AST nodes, including source position and analysis hints
     """
+
     position: Optional[SourcePosition] = None
     complexity_hints: Optional[Dict[str, Any]] = None
     loop_depth: int = 0
@@ -73,7 +74,7 @@ class ASTNode(ABC):
 
 @dataclass
 class Program(ASTNode):
-    statements: List[ASTNode] = field(default_factory=list[ASTNode])
+    statements: List[ASTNode] = field(default_factory=list)
 
     def __post_init__(self):
         super().__init__()
@@ -132,7 +133,7 @@ class Null(ASTNode):
 
 @dataclass
 class VarDecl(ASTNode):
-    items: List[Any] = field(default_factory=List[Any])
+    items: List[Any] = field(default_factory=list)
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_var_decl(self)
@@ -175,9 +176,10 @@ class FieldTarget(ASTNode):
 
 @dataclass
 class ForLoop(ASTNode):
-    var: str | None
+    var: str
     start: Any
     end: Any
+    step: Optional[Any] = None
     body: List[Any] = field(default_factory=List[Any])
     preserve_counter_value: bool = True
 
@@ -253,6 +255,8 @@ class ArrayAccess(ASTNode):
 class ArraySlice(ASTNode):
     name: str
     ranges: List[Any]
+    start: Optional[Any] = None
+    end: Optional[Any] = None
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_array_slice(self)
@@ -393,6 +397,14 @@ class SubstringFunction(ASTNode):
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_substring_function(self)
+
+
+@dataclass
+class PrintStmt(ASTNode):
+    value: Any
+
+    def accept(self, visitor: Any) -> Any:
+        return visitor.visit_print_stmt(self)
 
 
 @dataclass

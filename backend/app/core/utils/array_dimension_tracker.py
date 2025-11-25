@@ -1,10 +1,10 @@
 """
-Tracks and validates array dimensions in AST nodes.
+Tracks and validates array dimensions in an abstract syntax tree (AST).
 """
 
 from typing import Any, Dict, List, Optional
 
-from app.core.language.ast.node import Number
+from app.core.language.ast import Number
 
 
 class ArrayDimensionTracker:
@@ -38,14 +38,6 @@ class ArrayDimensionTracker:
             return errors
 
         declared_dims = self.array_dimensions[array_name]
-
-        if declared_dims and not declared_dims[0]:
-            if len(indices) != 1:
-                errors.append(
-                    f"Array parameter '{array_name}' should be accessed with exactly 1 index, "
-                    f"but {len(indices)} indices provided."
-                )
-            return errors
 
         if len(indices) != len(declared_dims):
             errors.append(

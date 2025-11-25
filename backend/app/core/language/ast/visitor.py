@@ -5,16 +5,22 @@ Abstract Syntax Tree (AST) Visitor Pattern Implementation
 from abc import ABC, abstractmethod
 from typing import Any
 
-from .node import (AddEdgeFunction, AddNodeFunction, ArrayAccess, ArraySlice,
-                   ArrayTarget, ArrayVarDecl, Assignment, BinOp, Bool,
-                   CallMethod, CallStmt, CeilFunction, ClassDef, Comment,
-                   ConcatFunction, FieldAccess, FieldTarget, FloorFunction,
-                   ForLoop, FuncCallExpr, GraphOperation, GraphTraversal,
-                   GraphVarDecl, IfElse, LengthFunction, NeighborsFunction,
-                   NewGraph, NewObject, Null, Number, ObjectVarDecl, Parameter,
-                   Program, RepeatUntil, ReturnStmt, ShortCircuitBinOp, String,
-                   StrlenFunction, SubroutineDef, SubstringFunction, UnOp, Var,
-                   VarDecl, VarTarget, WhileLoop)
+from app.core.language.ast.node import (AddEdgeFunction, AddNodeFunction,
+                                        ArrayAccess, ArraySlice, ArrayTarget,
+                                        ArrayVarDecl, Assignment, BinOp, Bool,
+                                        CallMethod, CallStmt, CeilFunction,
+                                        ClassDef, Comment, ConcatFunction,
+                                        FieldAccess, FieldTarget,
+                                        FloorFunction, ForLoop, FuncCallExpr,
+                                        GraphOperation, GraphTraversal,
+                                        GraphVarDecl, IfElse, LengthFunction,
+                                        NeighborsFunction, NewGraph, NewObject,
+                                        Null, Number, ObjectVarDecl, Parameter,
+                                        PrintStmt, Program, RepeatUntil,
+                                        ReturnStmt, ShortCircuitBinOp, String,
+                                        StrlenFunction, SubroutineDef,
+                                        SubstringFunction, UnOp, Var, VarDecl,
+                                        VarTarget, WhileLoop)
 
 
 class ASTVisitor(ABC):
@@ -74,6 +80,10 @@ class ASTVisitor(ABC):
 
     @abstractmethod
     def visit_return_stmt(self, node: ReturnStmt) -> Any:
+        pass
+
+    @abstractmethod
+    def visit_print_stmt(self, node: PrintStmt) -> Any:
         pass
 
     @abstractmethod
@@ -268,6 +278,10 @@ class DefaultASTVisitor(ASTVisitor):
         if node.value:
             node.value.accept(self)
 
+    def visit_print_stmt(self, node: PrintStmt) -> Any:
+        if node.value and hasattr(node.value, "accept"):
+            node.value.accept(self)
+
     def visit_array_access(self, node: ArrayAccess) -> Any:
         if isinstance(node.index, list):
             for idx in node.index:
@@ -289,10 +303,13 @@ class DefaultASTVisitor(ASTVisitor):
                     if hasattr(r, "accept"):
                         r.accept(self)
         else:
-            if hasattr(node.start, "accept"):
-                node.start.accept(self)
-            if hasattr(node.end, "accept"):
-                node.end.accept(self)
+            if node.start:
+                if hasattr(node.start, "accept"):
+                    node.start.accept(self)
+
+            if node.end:
+                if hasattr(node.end, "accept"):
+                    node.end.accept(self)
 
     def visit_field_access(self, node: FieldAccess) -> Any:
         pass
@@ -354,41 +371,119 @@ class DefaultASTVisitor(ASTVisitor):
         node.expr.accept(self)
 
     def visit_strlen_function(self, node: StrlenFunction) -> Any:
-        node.expr.accept(self)
+        if hasattr(node.expr, "accept"):
+            node.expr.accept(self)
 
     def visit_concat_function(self, node: ConcatFunction) -> Any:
-        node.left.accept(self)
-        node.right.accept(self)
+        if hasattr(node.left, "accept"):
+            node.left.accept(self)
+        if hasattr(node.right, "accept"):
+            node.right.accept(self)
 
     def visit_substring_function(self, node: SubstringFunction) -> Any:
-        node.string.accept(self)
-        node.start.accept(self)
-        node.length.accept(self)
+        if hasattr(node.string, "accept"):
+            node.string.accept(self)
+        if hasattr(node.start, "accept"):
+            node.start.accept(self)
+        if node.length and hasattr(node.length, "accept"):
+            node.length.accept(self)
 
     def visit_new_graph(self, node: NewGraph) -> Any:
         pass
 
     def visit_graph_operation(self, node: GraphOperation) -> Any:
-        pass
+        for n in getattr(node, "nodes", []):
+            if hasattr(n, "accept"):
+                n.accept(self)
 
     def visit_graph_traversal(self, node: GraphTraversal) -> Any:
-        pass
+        if hasattr(node.start_node, "accept"):
+            node.start_node.accept(self)
+        for op in getattr(node, "operations", []):
+            if hasattr(op, "accept"):
+                op.accept(self)
 
     def visit_add_node_function(self, node: AddNodeFunction) -> Any:
-        node.node.accept(self)
+        if hasattr(node.node, "accept"):
+            node.node.accept(self)
 
     def visit_add_edge_function(self, node: AddEdgeFunction) -> Any:
-        node.from_node.accept(self)
-        node.to_node.accept(self)
+        if hasattr(node.from_node, "accept"):
+            node.from_node.accept(self)
+        if hasattr(node.to_node, "accept"):
+            node.to_node.accept(self)
 
     def visit_neighbors_function(self, node: NeighborsFunction) -> Any:
-        node.node.accept(self)
+        if hasattr(node.node, "accept"):
+            node.node.accept(self)
 
     def visit_array_var_decl(self, node: ArrayVarDecl) -> Any:
-        pass
+        for dim in getattr(node, "dimensions", []):
+            if hasattr(dim, "accept"):
+                dim.accept(self)
 
     def visit_object_var_decl(self, node: ObjectVarDecl) -> Any:
         pass
 
     def visit_graph_var_decl(self, node: GraphVarDecl) -> Any:
         pass
+
+
+class RecursionChecker(DefaultASTVisitor):
+    """Visitor to check for recursion in function calls"""
+
+    def __init__(self, target_name: str):
+        self.target_name = target_name
+        self.found = False
+
+    def visit_func_call_expr(self, node: FuncCallExpr):
+        if node.name == self.target_name:
+            self.found = True
+        super().visit_func_call_expr(node)
+
+    def visit_call_stmt(self, node: CallStmt):
+        if node.name == self.target_name:
+            self.found = True
+        super().visit_call_stmt(node)
+
+
+class LoopChecker(DefaultASTVisitor):
+    """Visitor to check for presence of loops in the AST"""
+
+    def __init__(self):
+        self.found = False
+
+    def visit_for_loop(self, node: ForLoop):
+        self.found = True
+        super().visit_for_loop(node)
+
+    def visit_while_loop(self, node: WhileLoop):
+        self.found = True
+        super().visit_while_loop(node)
+
+    def visit_repeat_until(self, node: RepeatUntil):
+        self.found = True
+        super().visit_repeat_until(node)
+
+
+class WorkAnalyzer(DefaultASTVisitor):
+    """Visitor to analyze the maximum nesting level of loops in the AST"""
+
+    def __init__(self):
+        self.max_nesting = 0
+        self.current_nesting = 0
+        self.has_loops = False
+
+    def visit_for_loop(self, node: ForLoop):
+        self.has_loops = True
+        self.current_nesting += 1
+        self.max_nesting = max(self.max_nesting, self.current_nesting)
+        super().visit_for_loop(node)
+        self.current_nesting -= 1
+
+    def visit_while_loop(self, node: WhileLoop):
+        self.has_loops = True
+        self.current_nesting += 1
+        self.max_nesting = max(self.max_nesting, self.current_nesting)
+        super().visit_while_loop(node)
+        self.current_nesting -= 1

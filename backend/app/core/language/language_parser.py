@@ -2,12 +2,31 @@
 Module that contains the implementation of the main parser for the refactored language.
 """
 
-from app.core.exceptions.exception import ParsingError
-from app.core.interfaces.language_parser import ILanguageParser
-from app.core.language.ast.node import Program
+from abc import ABC, abstractmethod
+
+from app.core.exceptions import ParsingError
+from app.core.language.ast import Program
 from app.core.language.ast_builder import ASTBuilder
 from app.core.language.lark_parser import LarkParser
 from app.core.utils import FileReader
+
+
+class ILanguageParser(ABC):
+    """
+    Interface for the language parser.
+    """
+
+    @abstractmethod
+    def parse(self, code: str) -> Program:
+        """
+        Parse code and return the AST.
+        """
+
+    @abstractmethod
+    def parse_file(self, file_path: str) -> Program:
+        """
+        Parse a file and return the AST.
+        """
 
 
 class LanguageParser(ILanguageParser):

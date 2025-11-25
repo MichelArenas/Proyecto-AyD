@@ -4,56 +4,73 @@ Syntax validator for the language AST.
 
 from typing import Any, List, Optional, Set, Tuple
 
-from app.core.language.ast.node import (AddEdgeFunction, AddNodeFunction,
-                                        ArrayAccess, ArraySlice, ArrayTarget,
-                                        ArrayVarDecl, Assignment, BinOp, Bool,
-                                        CallStmt, CeilFunction, ClassDef,
-                                        Comment, ConcatFunction, FieldAccess,
-                                        FieldTarget, FloorFunction, ForLoop,
-                                        FuncCallExpr, GraphVarDecl, IfElse,
-                                        LengthFunction, NeighborsFunction,
-                                        NewGraph, NewObject, Null, Number,
-                                        ObjectVarDecl, Parameter, Program,
-                                        RepeatUntil, ReturnStmt,
-                                        ShortCircuitBinOp, String,
-                                        StrlenFunction, SubroutineDef,
-                                        SubstringFunction, UnOp, Var, VarDecl,
-                                        VarTarget, WhileLoop)
-from app.core.language.ast.visitor import DefaultASTVisitor
-from app.core.utils.array_dimension_tracker import ArrayDimensionTracker
-from app.core.utils.multidimensional_handler import \
-    MultidimensionalArrayHandler
-from app.core.validators.loop_validator import LoopValidator
+from app.core.language.ast import (AddEdgeFunction, AddNodeFunction,
+                                   ArrayAccess, ArraySlice, ArrayTarget,
+                                   ArrayVarDecl, Assignment, BinOp, Bool,
+                                   CallMethod, CallStmt, CeilFunction,
+                                   ClassDef, Comment, ConcatFunction,
+                                   FieldAccess, FieldTarget, FloorFunction,
+                                   ForLoop, FuncCallExpr, GraphVarDecl, IfElse,
+                                   LengthFunction, NeighborsFunction, NewGraph,
+                                   NewObject, Null, Number, ObjectVarDecl,
+                                   Parameter, PrintStmt, Program, RepeatUntil,
+                                   ReturnStmt, ShortCircuitBinOp, String,
+                                   StrlenFunction, SubroutineDef,
+                                   SubstringFunction, UnOp, Var, VarDecl,
+                                   VarTarget, WhileLoop)
+from app.core.utils import ArrayDimensionTracker, MultidimensionalArrayHandler
+from app.core.validators import BaseValidator, LoopValidator
 
 
-class SyntaxValidator(DefaultASTVisitor):
+class SyntaxValidator(BaseValidator):
     """
     Validator that checks the syntax and structure of the AST.
     """
 
     def __init__(self):
-        self.errors: Set[str] = set()
-        self.warnings: Set[str] = set()
+        super().__init__()
         self.declared_variables: set[str] = set()
         self.declared_classes: set[str] = set()
         self.current_subroutine: Optional[str] = None
         self.dimension_tracker = ArrayDimensionTracker()
-        self.loop_validator = LoopValidator()  # Add loop validator
-        self.array_variables: set[str] = set()  # Track array variables
-        self.object_variables: set[str] = set()  # Track object variables
-        self.graph_variables: set[str] = set()  # Track graph variables
+        self.loop_validator = LoopValidator()
+        self.array_variables: set[str] = set()
+        self.object_variables: set[str] = set()
+        self.graph_variables: set[str] = set()
+        self.scope_stack: List[Tuple[set[str], set[str], set[str], set[str]]] = []
+
+    def _enter_scope(self):
+        """Enter a new scope by saving current variable sets."""
+        self.scope_stack.append(
+            (
+                self.declared_variables.copy(),
+                self.array_variables.copy(),
+                self.object_variables.copy(),
+                self.graph_variables.copy(),
+            )
+        )
+
+    def _exit_scope(self):
+        """Exit current scope and restore previous variable sets."""
+        if self.scope_stack:
+            (
+                self.declared_variables,
+                self.array_variables,
+                self.object_variables,
+                self.graph_variables,
+            ) = self.scope_stack.pop()
 
     def validate(self, ast: Program) -> Tuple[List[str], List[str]]:
         """
         Validates the syntax of the given AST.
         """
-        self.errors.clear()
-        self.warnings.clear()
+        self.clear_state()
         self.declared_variables.clear()
         self.declared_classes.clear()
         self.array_variables.clear()
         self.object_variables.clear()
         self.graph_variables.clear()
+        self.scope_stack.clear()
 
         ast.accept(self)
 
@@ -74,21 +91,21 @@ class SyntaxValidator(DefaultASTVisitor):
             if isinstance(stmt, ClassDef):
                 if found_subroutine:
                     self.add_error(
-                        f"Clase '{stmt.name}' definida después de subrutinas. "
-                        "Las clases deben definirse antes que las subrutinas."
+                        f"Class '{stmt.name}' defined after subroutines. "
+                        "Classes must be defined before subroutines."
                     )
                 if found_main_code:
                     self.add_error(
-                        f"Clase '{stmt.name}' definida después del código principal. "
-                        "Las clases deben definirse al inicio del programa."
+                        f"Class '{stmt.name}' defined after main code. "
+                        "Classes must be defined at the beginning of the program."
                     )
 
             elif isinstance(stmt, SubroutineDef):
                 found_subroutine = True
                 if found_main_code:
                     self.add_error(
-                        f"Subrutina '{stmt.name}' definida después del código principal. "
-                        "Las subrutinas deben definirse antes del código principal."
+                        f"Subroutine '{stmt.name}' defined after main code. "
+                        "Subroutines must be defined before main code."
                     )
 
             else:
@@ -136,16 +153,13 @@ class SyntaxValidator(DefaultASTVisitor):
 
         for i, stmt in enumerate(subroutine.body):
             if isinstance(stmt, VarDecl):
-                # If we already found non-declaration code, this is an error
                 if found_non_decl and consecutive_var_decls_at_start:
                     self.add_error(
                         f"Variable declaration found after executable code in subroutine '{subroutine.name}'. Variables must be declared at the start of the block."
                     )
                     break
             elif not self._is_comment_or_empty(stmt):
-                # This is executable code
                 found_non_decl = True
-                # Check if this breaks the consecutive variable declarations at start
                 if i > 0 and isinstance(subroutine.body[i - 1], VarDecl):
                     consecutive_var_decls_at_start = False
 
@@ -154,14 +168,6 @@ class SyntaxValidator(DefaultASTVisitor):
         Determines if a statement is a comment or empty.
         """
         return isinstance(stmt, Comment) or not stmt
-
-    def add_error(self, message: str):
-        """Adds a validation error."""
-        self.errors.add(f"Error: {message}")
-
-    def add_warning(self, message: str):
-        """Adds a validation warning."""
-        self.warnings.add(f"Warning: {message}")
 
     def visit_program(self, node: Program) -> Any:
         for stmt in node.statements:
@@ -193,15 +199,12 @@ class SyntaxValidator(DefaultASTVisitor):
 
         self.current_subroutine = str(node.name)
 
-        # First, process all parameters
         for param in node.parameters:
             param.accept(self)
 
-        # Then process the body
         for stmt in node.body:
             stmt.accept(self)
 
-        # Restore previous scope
         self.current_subroutine = old_subroutine
         self.declared_variables = old_variables
         self.array_variables = old_arrays
@@ -216,13 +219,9 @@ class SyntaxValidator(DefaultASTVisitor):
         else:
             self.declared_variables.add(str(node.name))
 
-            # Track parameter types for proper validation
             if node.param_type == "array":
                 self.array_variables.add(str(node.name))
-                # For array parameters, if dimensions is empty or None, assume single dimension
-                dimensions = (
-                    node.dimensions if node.dimensions else [None]
-                )  # Single dimension array
+                dimensions = node.dimensions if node.dimensions else [None]
                 self.dimension_tracker.register_array(str(node.name), dimensions)
             elif node.param_type == "object":
                 self.object_variables.add(str(node.name))
@@ -238,19 +237,17 @@ class SyntaxValidator(DefaultASTVisitor):
                 else:
                     self.declared_variables.add(var_name)
             elif isinstance(item, ArrayVarDecl):
-                # Handle array declaration
                 if item.name in self.declared_variables:
                     self.add_error(f"Array variable '{item.name}' is already declared")
                 else:
                     self.declared_variables.add(item.name)
                     self.array_variables.add(item.name)
                     self.dimension_tracker.register_array(item.name, item.dimensions)
-                    # Process dimensions
+
                     for dim in item.dimensions:
                         if hasattr(dim, "accept"):
                             dim.accept(self)
             elif isinstance(item, ObjectVarDecl):
-                # Handle object declaration
                 if item.class_name not in self.declared_classes:
                     self.add_error(
                         f"Class '{item.class_name}' is not defined for variable '{item.name}'"
@@ -261,7 +258,6 @@ class SyntaxValidator(DefaultASTVisitor):
                     self.declared_variables.add(item.name)
                     self.object_variables.add(item.name)
             elif isinstance(item, GraphVarDecl):
-                # Handle graph declaration
                 if item.name in self.declared_variables:
                     self.add_error(f"Graph variable '{item.name}' is already declared")
                 else:
@@ -293,9 +289,8 @@ class SyntaxValidator(DefaultASTVisitor):
 
     def visit_for_loop(self, node: ForLoop) -> Any:
         """
-        Valida el bucle FOR con cumplimiento Pascal y marca la variable para comportamiento específico.
+        Validates FOR loop with Pascal compliance and marks variable for specific behavior.
         """
-        # Validate FOR loop with Pascal compliance
         loop_errors = self.loop_validator.validate_for_loop(node)
         for error in loop_errors:
             self.errors.add(error)
@@ -305,9 +300,11 @@ class SyntaxValidator(DefaultASTVisitor):
         if hasattr(node.end, "accept"):
             node.end.accept(self)
 
+        self._enter_scope()
         for stmt in node.body:
             if hasattr(stmt, "accept"):
                 stmt.accept(self)
+        self._exit_scope()
 
     def visit_var_target(self, node: VarTarget) -> Any:
         pass
@@ -322,58 +319,75 @@ class SyntaxValidator(DefaultASTVisitor):
         if node.obj not in self.declared_variables:
             self.add_error(f"Object variable '{node.obj}' is not declared")
 
-    def _validate_array_access(self, array_name: str, indices: Any):
+    def _validate_array_access(self, array_name: str, index: Any):
         """
         Validates that access to multidimensional arrays is correct.
         """
-        if isinstance(indices, list):
-            if len(indices) == 0:
-                self.add_error(f"Access to array '{array_name}' without indices")
+        if isinstance(index, list):
+            if len(index) == 0:
+                self.add_error(f"Access to array '{array_name}' without index")
 
-            for idx in indices:
+            for idx in index:
                 if hasattr(idx, "accept"):
                     idx.accept(self)
-        elif hasattr(indices, "accept"):
-            indices.accept(self)
+        elif hasattr(index, "accept"):
+            index.accept(self)
 
     def visit_comment(self, node: Comment) -> Any:
         pass
 
     def visit_while_loop(self, node: WhileLoop) -> Any:
-        # Validate WHILE loop
         loop_errors = self.loop_validator.validate_while_loop(node)
         for error in loop_errors:
             self.errors.add(error)
 
         if hasattr(node.cond, "accept"):
             node.cond.accept(self)
+
+        self._enter_scope()
         for stmt in node.body:
             if hasattr(stmt, "accept"):
                 stmt.accept(self)
+        self._exit_scope()
 
     def visit_repeat_until(self, node: RepeatUntil) -> Any:
-        # Validate REPEAT loop
         loop_errors = self.loop_validator.validate_repeat_loop(node)
         for error in loop_errors:
             self.errors.add(error)
 
+        self._enter_scope()
         for stmt in node.body:
             if hasattr(stmt, "accept"):
                 stmt.accept(self)
         if hasattr(node.cond, "accept"):
             node.cond.accept(self)
+        self._exit_scope()
 
     def visit_if_else(self, node: IfElse) -> Any:
         if hasattr(node.cond, "accept"):
             node.cond.accept(self)
+
+        self._enter_scope()
         for stmt in node.then_branch:
             if hasattr(stmt, "accept"):
                 stmt.accept(self)
+        self._exit_scope()
+
+        self._enter_scope()
         for stmt in node.else_branch:
             if hasattr(stmt, "accept"):
                 stmt.accept(self)
+        self._exit_scope()
 
     def visit_call_stmt(self, node: CallStmt) -> Any:
+        for arg in node.args:
+            if hasattr(arg, "accept"):
+                arg.accept(self)
+
+    def visit_call_method(self, node: CallMethod) -> Any:
+        if hasattr(node.obj, "accept"):
+            node.obj.accept(self)
+
         for arg in node.args:
             if hasattr(arg, "accept"):
                 arg.accept(self)
@@ -382,12 +396,20 @@ class SyntaxValidator(DefaultASTVisitor):
         if node.value and hasattr(node.value, "accept"):
             node.value.accept(self)
 
-    def visit_array_access(self, node: ArrayAccess) -> Any:
-        handler = MultidimensionalArrayHandler(self.dimension_tracker)
+    def visit_print_stmt(self, node: PrintStmt) -> Any:
+        if node.value and hasattr(node.value, "accept"):
+            node.value.accept(self)
 
-        if not handler.validate_multidimensional_access(node.name, node.index):
-            for error in handler.errors:
-                self.add_error(error)
+    def visit_array_access(self, node: ArrayAccess) -> Any:
+        if node.name not in self.declared_variables:
+            self.add_error(f"Array '{node.name}' not declared")
+        else:
+            if node.name in self.dimension_tracker.array_dimensions:
+                handler = MultidimensionalArrayHandler(self.dimension_tracker)
+                if not handler.validate_multidimensional_access(node.name, node.index):
+                    for error in handler.errors:
+                        if "not declared" not in error:
+                            self.add_error(error)
 
         if isinstance(node.index, list):
             for idx in node.index:
@@ -397,7 +419,7 @@ class SyntaxValidator(DefaultASTVisitor):
             node.index.accept(self)
 
     def visit_array_slice(self, node: ArraySlice) -> Any:
-        """Validar slice de arreglos."""
+        """Validate array slicing."""
         if isinstance(node.ranges, list):
             for r in node.ranges:
                 if isinstance(r, tuple) and len(r) == 2:
@@ -439,7 +461,6 @@ class SyntaxValidator(DefaultASTVisitor):
         pass
 
     def visit_var(self, node: Var) -> Any:
-        # Skip validation for built-in function calls
         if self._is_builtin_function_context(node.name):
             return
 
@@ -449,7 +470,6 @@ class SyntaxValidator(DefaultASTVisitor):
                 if obj_name not in self.declared_variables:
                     self.add_error(f"Object variable '{obj_name}' is not declared")
             else:
-                # Don't report error for function names or built-ins
                 if not self._is_function_or_builtin(node.name):
                     self.add_error(f"Variable '{node.name}' is not declared")
 
@@ -470,8 +490,6 @@ class SyntaxValidator(DefaultASTVisitor):
 
     def _is_function_or_builtin(self, name: str) -> bool:
         """Check if this is a function name or built-in."""
-        # This would need to be enhanced with actual function registry
-        # For now, we'll be more lenient to avoid false positives
         return False
 
     def visit_bool(self, node: Bool) -> Any:

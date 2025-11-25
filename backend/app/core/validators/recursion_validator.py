@@ -1,11 +1,20 @@
+"""
+Module to validate recursive function calls in a custom programming language AST.
+"""
+
 from collections import defaultdict
 from typing import Any, Dict, Set
 
-from app.core.language.ast.node import CallStmt, FuncCallExpr, SubroutineDef
-from app.core.language.ast.visitor import DefaultASTVisitor
+from app.core.language.ast import (CallStmt, DefaultASTVisitor, FuncCallExpr,
+                                   SubroutineDef)
 
 
 class RecursionValidator(DefaultASTVisitor):
+    """
+    Validates recursive function calls in the AST by building a call graph
+    and detecting cycles.
+    """
+
     def __init__(self) -> None:
         super().__init__()
         self.call_graph: Dict[Any, Any] = defaultdict(set)
@@ -29,6 +38,9 @@ class RecursionValidator(DefaultASTVisitor):
         super().visit_call_stmt(node)
 
     def analyze_recursion(self):
+        """
+        Analyze the call graph to detect recursive functions.
+        """
         visited: Set[Any] = set()
         recursion_stack: Set[Any] = set()
 

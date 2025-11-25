@@ -5,12 +5,11 @@ Analyzes code to detect potential NULL-related issues.
 
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from app.core.language.ast.node import (Assignment, ASTNode, BinOp,
-                                        FieldAccess, FieldTarget, ForLoop,
-                                        FuncCallExpr, IfElse, NewObject, Null,
-                                        Program, RepeatUntil, Var, VarTarget,
-                                        WhileLoop)
-from app.core.language.ast.visitor import DefaultASTVisitor
+from app.core.language.ast import (Assignment, ASTNode, BinOp,
+                                   DefaultASTVisitor, FieldAccess, FieldTarget,
+                                   ForLoop, FuncCallExpr, IfElse, NewObject,
+                                   Null, Program, RepeatUntil, Var, VarTarget,
+                                   WhileLoop)
 
 
 class NullSafetyValidator(DefaultASTVisitor):
@@ -72,7 +71,8 @@ class NullSafetyValidator(DefaultASTVisitor):
                 if target_name:
                     self.nullable_variables.add(target_name)
                     self.add_warning(
-                        f"Variable '{target_name}' may be assigned NULL from variable '{node.value.name}'."
+                        f"Variable '{target_name}' may be assigned "
+                        f"NULL from variable '{node.value.name}'."
                     )
 
         super().visit_assignment(node)
@@ -86,7 +86,8 @@ class NullSafetyValidator(DefaultASTVisitor):
         if obj_name in self.nullable_variables:
             if obj_name not in self.checked_variables:
                 self.add_warning(
-                    f"Accessing field '{node.field}' of potentially NULL variable '{obj_name}' without prior NULL check."
+                    f"Accessing field '{node.field}' of potentially NULL "
+                    f"variable '{obj_name}' without prior NULL check."
                 )
 
         if hasattr(node, "field") and isinstance(node.field, FieldAccess):
@@ -136,7 +137,8 @@ class NullSafetyValidator(DefaultASTVisitor):
 
         if node.name and str(node.name).lower() in potentially_null_functions:
             self.add_warning(
-                f"The function '{node.name}' may return NULL. Ensure to handle its return value appropriately."
+                f"The function '{node.name}' may return NULL. "
+                "Ensure to handle its return value appropriately."
             )
 
         super().visit_func_call_expr(node)
